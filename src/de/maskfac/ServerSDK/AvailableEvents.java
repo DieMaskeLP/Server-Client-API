@@ -12,6 +12,6 @@ public enum AvailableEvents {
     ServerClientDisconnectEvent,
     ServerConsoleInputEvent,
     ServerDataReceivedEvent,
-    ServerErrorThrowEvent
-
+    ServerErrorThrowEvent,
+    ServerSuccessfulStartEvent,
 }

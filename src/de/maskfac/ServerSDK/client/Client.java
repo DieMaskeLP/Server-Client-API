@@ -1,9 +1,7 @@
 package de.maskfac.ServerSDK.client;
 
-import de.maskfac.ServerSDK.AvailableEvents;
 import de.maskfac.ServerSDK.Event;
 
-import javax.swing.tree.ExpandVetoException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -99,7 +97,7 @@ public class Client {
                     try {
                         System.out.print(prefix);
                         while ((s = reader.readLine()) != null && consoleInputEnabled) {
-                            event.onClientConsoleInput(s, s.split(" "));
+                            event.onClientConsoleInput(Client.this, s, s.split(" "));
                             System.out.print(prefix);
                         }
                     } catch (IOException e){
@@ -117,7 +115,7 @@ public class Client {
         writer.write(s);
         for (Event event : events){
             if (event instanceof ClientDataSentEvent){
-                ((ClientDataSentEvent) event).onDataSent(this, s);
+                ((ClientDataSentEvent) event).onClientDataSent(this, s);
             }
         }
         writer.flush();

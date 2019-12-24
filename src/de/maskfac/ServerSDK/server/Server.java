@@ -7,10 +7,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +44,7 @@ public class Server {
                     try {
                         System.out.print(prefix);
                         while ((s = reader.readLine()) != null && consoleInputEnabled) {
-                            event.onServerConsoleInput(s);
+                            event.onServerConsoleInput(thisServer, s);
                             System.out.print(prefix);
                         }
                     } catch (IOException e){
@@ -90,25 +88,28 @@ public class Server {
         }
     }
 
-    public InetAddress getInetAddress() {
-        return serverSocket.getInetAddress();
-    }
-
     public void sendDataToConnectedClients(String data){
         for (Client client : clients){
             client.sendData(data.endsWith("\n") ? data : data + "\n");
         }
     }
 
-    public void closeConnections(){
+    public void stopServer(){
+        if (isRunning){
+            try {
+                serverSocket.close();
+                isRunning = false;
+            } catch (IOException e) {
+                throwException(e);
+            }
+        }
+    }
+
+    public void breakConnections(){
         for (Client client : clients){
             client.breakConnection();
         }
         clients.clear();
-    }
-
-    public SocketAddress getLocalSocketAddress() {
-        return serverSocket.getLocalSocketAddress();
     }
 
     public boolean startServer() {
@@ -121,6 +122,11 @@ public class Server {
                     try {
 
                         serverSocket = new ServerSocket(port);
+                        for (Event event : events){
+                            if (event instanceof ServerSuccessfulStartEvent){
+                                ((ServerSuccessfulStartEvent) event).onServerStarted(thisServer);
+                            }
+                        }
 
                         while (isRunning) {
 
@@ -154,7 +160,7 @@ public class Server {
                                     }
                                     for (Event event : events) {
                                         if (event instanceof ServerClientDisconnectEvent) {
-                                            ((ServerClientDisconnectEvent) event).onServerDisconnect(client, thisServer);
+                                            ((ServerClientDisconnectEvent) event).onServerClientDisconnect(client, thisServer);
                                         }
                                     }
                                     clients.remove(client);
